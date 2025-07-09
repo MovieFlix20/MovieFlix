@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieFlix - Download Movies</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #e50914;
+            --dark-color: #141414;
+            --light-color: #f4f4f4;
+            --grey-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-color);
+            color: var(--light-color);
+        }
+
+        header {
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        #search-bar, #category-filter {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--grey-color);
+            background-color: var(--grey-color);
+            color: var(--light-color);
+            font-size: 1rem;
+        }
+        
+        /* New Style for Ad Container */
+        .ad-container {
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        main {
+            padding: 20px 50px; /* Adjusted padding */
+        }
+        
+        #loading {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        #movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .movie-card {
+            background-color: var(--grey-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 375px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -70%);
+            font-size: 4rem;
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-card:hover .play-icon {
+            opacity: 1;
+        }
+
+
+        .movie-info {
+            padding: 15px;
+        }
+
+        .movie-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .movie-info .category {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #b20710;
+        }
+
+        /* Video Player Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 80%;
+            max-width: 900px;
+        }
+        
+        .modal-content iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #fff;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">MovieFlix</a>
+        <div class="controls">
+            <input type="text" id="search-bar" placeholder="Search for a movie...">
+            <select id="category-filter">
+                <option value="all">All Categories</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Adsterra Ad START: 728x90 Banner -->
+    <div class="ad-container">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'c08d3c642e1d07eb26440bdc4eeb4d2a',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//accountantflowerrespiration.com/c08d3c642e1d07eb26440bdc4eeb4d2a/invoke.js"></script>
+    </div>
+    <!-- Adsterra Ad END: 728x90 Banner -->
+
+    <main>
+        <div id="loading">Loading movies...</div>
+        <div id="movie-grid"></div>
+    </main>
+    
+    <!-- Video Player Modal -->
+    <div id="video-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <iframe id="video-player" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import functions from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyC8IsKZeXu-qn8t6nys3UwCEr88qcM-MAo",
+          authDomain: "movie-download-4565d.firebaseapp.com",
+          projectId: "movie-download-4565d",
+          storageBucket: "movie-download-4565d.firebasestorage.app",
+          messagingSenderId: "239894393517",
+          appId: "1:239894393517:web:d2855f1927368611c2cc24",
+          measurementId: "G-YZSWTM80D3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const movieGrid = document.getElementById('movie-grid');
+        const loadingDiv = document.getElementById('loading');
+        const searchBar = document.getElementById('search-bar');
+        const categoryFilter = document.getElementById('category-filter');
+        const videoModal = document.getElementById('video-modal');
+        const videoPlayer = document.getElementById('video-player');
+        const closeModalBtn = document.querySelector('.close-btn');
+
+        let allMovies = [];
+
+        // Fetch movies from Firestore
+        async function fetchMovies() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "movies"));
+                allMovies = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                populateCategories();
+                displayMovies(allMovies);
+                loadingDiv.style.display = 'none';
+            } catch (error) {
+                console.error("Error fetching movies: ", error);
+                loadingDiv.textContent = 'Failed to load movies. Please try again later.';
+            }
+        }
+        
+        // Populate category dropdown
+        function populateCategories() {
+            const categories = new Set(allMovies.map(movie => movie.category));
+            // Clear existing options except the first one
+            while (categoryFilter.options.length > 1) {
+                categoryFilter.remove(1);
+            }
+            categories.forEach(category => {
+                if (category) {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                }
+            });
+        }
+        
+        // Display movies on the page
+        function displayMovies(movies) {
+            movieGrid.innerHTML = '';
+            if (movies.length === 0) {
+                 movieGrid.innerHTML = '<p>No movies found.</p>';
+                 return;
+            }
+            movies.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.className = 'movie-card';
+                movieCard.innerHTML = `
+                    <img src="${movie.posterUrl}" alt="${movie.title}">
+                    <div class="play-icon">▶</div>
+                    <div class="movie-info">
+                        <h3>${movie.title}</h3>
+                        <span class="category">${movie.category}</span>
+                        <a href="${movie.downloadUrl}" class="download-btn" download>Download</a>
+                    </div>
+                `;
+                // Add event listener to open video player
+                movieCard.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('download-btn')) {
+                       openVideoPlayer(movie.videoUrl);
+                    }
+                });
+                movieGrid.appendChild(movieCard);
+            });
+        }
+
+        // Filter and Search logic
+        function filterAndSearch() {
+            const searchTerm = searchBar.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            
+            let filteredMovies = allMovies;
+            
+            if (selectedCategory !== 'all') {
+                filteredMovies = filteredMovies.filter(movie => movie.category === selectedCategory);
+            }
+            
+            if (searchTerm) {
+                filteredMovies = filteredMovies.filter(movie => movie.title.toLowerCase().includes(searchTerm));
+            }
+            
+            displayMovies(filteredMovies);
+        }
+        
+        // Video player functions
+        function openVideoPlayer(videoUrl) {
+            videoPlayer.src = videoUrl;
+            videoModal.style.display = 'flex';
+        }
+
+        function closeVideoPlayer() {
+            videoPlayer.src = ''; // Stop video playback
+            videoModal.style.display = 'none';
+        }
+
+        // Event Listeners
+        searchBar.addEventListener('input', filterAndSearch);
+        categoryFilter.addEventListener('change', filterAndSearch);
+        closeModalBtn.addEventListener('click', closeVideoPlayer);
+        window.addEventListener('click', (e) => {
+            if (e.target == videoModal) {
+                closeVideoPlayer();
+            }
+        });
+
+
+        // Initial fetch
+        fetchMovies();
+    </script>
+
+    <!-- Adsterra Ad START: Pop-under/Other Script -->
+    <script type='text/javascript' src='//accountantflowerrespiration.com/57/53/75/575375223fb48ee799015f322407df6a.js'></script>
+    <!-- Adsterra Ad END: Pop-under/Other Script -->
+
+</body>
+</html>
